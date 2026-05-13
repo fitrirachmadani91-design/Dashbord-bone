@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🚀 Real-time Service Tracker</title>
+
+  <!-- PAPA PARSE -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+
+  <!-- GOOGLE FONTS -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@700;800;900&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --color-dark-bg: #0a0e27;
+      --color-glass: rgba(255, 255, 255, 0.08);
+      --color-glass-border: rgba(255, 255, 255, 0.12);
+      --neon-cyan: #00d4ff;
+      --neon-pink: #ff49a6;
+      --neon-green: #00ff88;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #0f0f23 0%, #1a0033 30%, #2d1b69 60%, #0f0f23 100%);
+      color: #fff;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 100%;
+      margin: 0;
+      padding: 2rem 0 4rem;
+    }
+
+    .glass-card {
+      backdrop-filter: blur(30px);
+      background: var(--color-glass);
+      border: 1px solid var(--color-glass-border);
+      border-radius: 32px;
+      padding: 1rem 1rem 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .header-subtitle {
+      font-size: 1.05rem;
+      opacity: 0.9;
+      margin-bottom: 1.25rem;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1.5rem;
+      border-radius: 999px;
+      border: 1px solid rgba(0, 212, 255, 0.4);
+      background: rgba(0, 212, 255, 0.08);
+      font-size: 0.95rem;
+      font-weight: 600;
+    }
+
+    .status-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--neon-green);
+      box-shadow: 0 0 12px var(--neon-green);
+    }
+
+    .table-card {
+      background: rgba(10, 14, 39, 0.9);
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      overflow: hidden;
+    }
+
+    .table-header {
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+    }
+
+    .table-header span {
+      font-weight: 600;
+      font-size: 1.2rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .badge-total {
+      padding: 0.25rem 0.7rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      border: 1px solid rgba(0, 255, 136, 0.6);
+      color: #00ff88;
+      opacity: 0.9;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 1rem;
+    }
+
+    th,
+    td {
+      padding: 0.8rem 1rem;
+      text-align: left;
+      vertical-align: middle;
+    }
+
+    thead {
+      background: rgba(30, 64, 175, 0.9);
+    }
+
+    thead th {
+      font-size: 0.8rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    tbody tr:nth-child(even) {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    tbody tr:hover {
+      background: rgba(0, 212, 255, 0.08);
+    }
+
+    .loading-container,
+    .error-container,
+    .empty-container {
+      text-align: center;
+      padding: 3rem 1rem;
+      font-size: 0.95rem;
+    }
+
+    .loading-spinner {
+      display: inline-block;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 3px solid rgba(0, 212, 255, 0.3);
+      border-top-color: var(--neon-cyan);
+      animation: spin 1s linear infinite;
+      margin-bottom: 0.75rem;
+    }
+
+    .desa-badge {
+      display: inline-block;
+      padding: 0.2rem 0.7rem;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      white-space: nowrap;
+    }
+
+    .nama-hp-text {
+      font-size: 0.9rem;
+      opacity: 0.95;
+    }
+
+    .fab-refresh {
+      position: fixed;
+      bottom: 1.75rem;
+      right: 1.75rem;
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      background: linear-gradient(135deg, var(--neon-cyan), var(--neon-pink));
+      color: #fff;
+      font-size: 1.6rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 0 30px rgba(0, 212, 255, 0.5);
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    @media (max-width: 640px) {
+      .glass-card {
+        padding: 1rem;
+      }
+
+      table {
+        font-size: 0.9rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="glass-card">
+      <div class="header">
+        <p class="header-subtitle">Monitoring data layanan dari Google Sheets </p>
+        <div class="status-badge">
+          <span class="status-dot"></span>
+          <span>Live • Last Update: <span id="last-update">Sekarang</span></span>
+        </div>
+      </div>
+
+      <div id="table-wrapper">
+        <div class="loading-container">
+          <div class="loading-spinner"></div>
+          <p>🔄 Mengambil data dari Google Sheets...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <button class="fab-refresh" onclick="manualRefresh()" title="Refresh Manual">↻</button>
+
+  <script>
+    // ===== KONFIGURASI =====
+    // Link publik Sheet 3 -> output=csv
+    const CSV_URL =
+      'https://docs.google.com/spreadsheets/d/e/2PACX-1vT_twlyplVG8trE1Uvr892BEhgGofZBzzW-yIM-8fak_04D_RlwScqANTPY-HsPsYgeONL6Ax7NhknI/pub?gid=370709679&single=true&output=csv';
+
+    const AUTO_REFRESH_INTERVAL = 30000; // 30 detik [web:12]
+
+    // Mapping warna per Kecamatan/Desa (semua lowercase)
+    const desaColors = {
+      'cenrana':  { bg: '#ff4d4f', text: '#ffffff', border: '#ff7875' }, // merah
+      'labembe':  { bg: '#ff7a45', text: '#000000', border: '#ff9c6e' }, // oranye
+      'l.benteng': { bg: '#ffa940', text: '#000000', border: '#ffc069' }, // kuning-oranye
+      's.benteng': { bg: '#ffd666', text: '#000000', border: '#ffe58f' }, // kuning lembut
+      'darkel':   { bg: '#fadb14', text: '#000000', border: '#ffec3d' }, // kuning terang
+      'kajuara':  { bg: '#1890ff', text: '#ffffff', border: '#40a9ff' }, // biru
+      'k.baru':   { bg: '#40a9ff', text: '#000000', border: '#69c0ff' }, // biru muda
+      'panjalili': { bg: '#597ef7', text: '#ffffff', border: '#85a5ff' }, // biru keunguan
+      'cakkeware': { bg: '#722ed1', text: '#ffffff', border: '#9254de' }, // ungu
+      'batu tanre': { bg: '#13c2c2', text: '#000000', border: '#36cfc9' }, // cyan
+      'tanjongge': { bg: '#36cfc9', text: '#000000', border: '#5cdbd3' }, // cyan muda
+      'labotto':  { bg: '#eb2f96', text: '#ffffff', border: '#f759ab' }, // pink
+      'besse':    { bg: '#ff85c0', text: '#000000', border: '#ffadd2' }, // pink muda
+      'cacae':    { bg: '#52c41a', text: '#ffffff', border: '#73d13d' }, // hijau
+      'botto':    { bg: '#faad14', text: '#000000', border: '#ffc53d' }, // emas
+      'salokae':  { bg: '#a0d911', text: '#000000', border: '#c5f567' }, // hijau limau
+      'ajallasse': { bg: '#73d13d', text: '#000000', border: '#95de64' }, // hijau terang
+      'pallime':  { bg: '#ffbb96', text: '#000000', border: '#ffd8bf' }, // peach
+      'indolimbang': { bg: '#ffd6e7', text: '#000000', border: '#ffadd2' }, // pink pucat
+      'laopo':    { bg: '#bae7ff', text: '#000000', border: '#91d5ff' }, // biru sangat muda
+      'campako':  { bg: '#e6fffb', text: '#000000', border: '#b5f5ec' }, // aqua sangat muda
+      'ceppie':   { bg: '#f0f5ff', text: '#000000', border: '#d6e4ff' }, // biru keputihan
+      'pusungge': { bg: '#f9f0ff', text: '#000000', border: '#efdbff' }, // ungu muda
+      'lawo-lawo': { bg: '#fff1f0', text: '#000000', border: '#ffccc7' }, // merah sangat muda
+      'laoni':    { bg: '#f6ffed', text: '#000000', border: '#d9f7be' }, // hijau pucat
+      'allimbangenge': { bg: '#fff7e6', text: '#000000', border: '#ffe7ba' }, // krem-oranye
+      'saliweng benteng': { bg: '#f6fffb', text: '#000000', border: '#c6ffed' } // hijau kebiruan pucat
+    };
+
+    function normalize(str) {
+      return (str || '').toString().trim().toLowerCase();
+    }
+
+    function updateTimestamp() {
+      const now = new Date();
+      const timeString = now.toLocaleTimeString('id-ID', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      });
+      document.getElementById('last-update').textContent = timeString;
+    }
+
+    async function loadData() {
+      const wrapper = document.getElementById('table-wrapper');
+
+      wrapper.innerHTML = `
+        <div class="loading-container">
+          <div class="loading-spinner"></div>
+          <p>🔄 Memperbarui data...</p>
+        </div>
+      `;
+
+      updateTimestamp();
+
+      try {
+        const res = await fetch(CSV_URL);
+        if (!res.ok) throw new Error('HTTP status ' + res.status);
+
+        const csvText = await res.text();
+
+        Papa.parse(csvText, {
+          header: false,
+          skipEmptyLines: true,
+          complete: (results) => {
+            const rows = results.data || [];
+            const data = [];
+
+            rows.forEach((row) => {
+              if (!row || row.length === 0) return;
+
+              // Asumsi Sheet3:
+              // Column1 = Nama
+              // Column2 = No HP
+              // Column3 = Desa/Kecamatan
+              // Column4 = Jenis (Pemasangan/Perbaikan) -> tidak dipakai di tampilan ini
+              const nama = (row[0] || '').toString().trim();
+              const hp = (row[1] || '').toString().trim();
+              const desa = (row[2] || '').toString().trim();
+
+              // Skip baris kosong total
+              if (!nama && !hp && !desa) return;
+
+              // Skip header kalau header masih "Column 1", "Column 2", dll [web:12]
+              const nNama = normalize(nama);
+              const nHp = normalize(hp);
+              const nDesa = normalize(desa);
+              const isHeader =
+                (nNama === 'column 1' || nNama === 'nama') &&
+                (nHp === 'column 2' || nHp === 'no hp' || nHp === 'nomor hp' || nHp === 'hp') &&
+                (nDesa === 'column 3' || nDesa === 'desa' || nDesa === 'kecamatan');
+
+              if (isHeader) return;
+
+              // Gabungan Nama/HP → "NAMA/0863..."
+              let namaHp = '';
+              if (nama && hp) {
+                namaHp = `${nama}/${hp}`;
+              } else if (nama) {
+                namaHp = nama;
+              } else if (hp) {
+                namaHp = hp;
+              } else {
+                namaHp = '-';
+              }
+
+              data.push({
+                desa: desa || '-',
+                namaHp: namaHp
+              });
+            });
+
+            renderTable(data);
+            updateTimestamp();
+          },
+          error: (error) => {
+            throw error;
+          }
+        });
+      } catch (err) {
+        console.error(err);
+        wrapper.innerHTML = `
+          <div class="error-container">
+            ❌ Gagal mengambil data. Coba refresh atau cek koneksi.<br />
+            <small>${err.message}</small>
+          </div>
+        `;
+      }
+    }
+
+    function renderTable(data) {
+      const wrapper = document.getElementById('table-wrapper');
+
+      if (!data.length) {
+        wrapper.innerHTML = `
+          <div class="table-card">
+            <div class="table-header">
+              <span>Data Layanan</span>
+              <span class="badge-total">0 Data</span>
+            </div>
+            <div class="empty-container">
+              Tidak ada data.
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      let rowsHtml = '';
+
+      data.forEach((item) => {
+        const key = normalize(item.desa);
+        const colors = desaColors[key];
+
+        let style = '';
+        if (colors) {
+          style = `
+            background:${colors.bg};
+            color:${colors.text};
+            border-color:${colors.border};
+          `;
+        }
+
+        rowsHtml += `
+          <tr>
+            <td>
+              <span class="desa-badge" style="${style}">
+                ${item.desa}
+              </span>
+            </td>
+            <td>
+              <span class="nama-hp-text">
+                ${item.namaHp}
+              </span>
+            </td>
+          </tr>
+        `;
+      });
+
+      wrapper.innerHTML = `
+        <div class="table-card">
+          <div class="table-header">
+            <span>Data Layanan</span>
+            <span class="badge-total">${data.length} Data</span>
+          </div>
+          <div style="overflow-x:auto;">
+            <table>
+              <thead>
+                <tr>
+                  <th>Desa / Kecamatan</th>
+                  <th>Nama / No HP</th>
+                </tr>
+              </thead>
+              <tbody>${rowsHtml}</tbody>
+            </table>
+          </div>
+        </div>
+      `;
+    }
+
+    function manualRefresh() {
+      loadData();
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      loadData();
+      setInterval(loadData, AUTO_REFRESH_INTERVAL);
+    });
+
+    setInterval(updateTimestamp, 1000);
+  </script>
+</body>
+</html>
