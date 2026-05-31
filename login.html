@@ -1,0 +1,184 @@
+<!-- ========================= -->
+<!-- LOGIN.HTML FINAL STABIL -->
+<!-- ========================= -->
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+  <title>Login Admin</title>
+
+  <style>
+
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+    }
+
+    body{
+      visibility:hidden;
+      font-family:Arial, sans-serif;
+      background:linear-gradient(135deg,#0f172a,#1e293b);
+      height:100vh;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+    }
+
+    .login-card{
+      width:350px;
+      background:#1e293b;
+      padding:30px;
+      border-radius:20px;
+      box-shadow:0 0 20px rgba(0,0,0,0.4);
+      color:white;
+    }
+
+    h2{
+      text-align:center;
+      margin-bottom:25px;
+    }
+
+    input{
+      width:100%;
+      padding:12px;
+      margin-top:15px;
+      border:none;
+      border-radius:10px;
+      outline:none;
+      font-size:15px;
+    }
+
+    button{
+      width:100%;
+      padding:12px;
+      margin-top:20px;
+      border:none;
+      border-radius:10px;
+      background:#06b6d4;
+      color:white;
+      font-size:16px;
+      font-weight:bold;
+      cursor:pointer;
+    }
+
+    button:hover{
+      opacity:0.9;
+    }
+
+    #msg{
+      text-align:center;
+      margin-top:15px;
+      color:#ff6b6b;
+    }
+
+  </style>
+</head>
+
+<body>
+
+  <div class="login-card">
+
+    <h2>LOGIN ADMIN</h2>
+
+    <input 
+      type="email" 
+      id="email" 
+      placeholder="Masukkan Email"
+    >
+
+    <input 
+      type="password" 
+      id="password" 
+      placeholder="Masukkan Password"
+    >
+
+    <button onclick="login()">
+      LOGIN
+    </button>
+
+    <p id="msg"></p>
+
+  </div>
+
+  <script type="module">
+
+    import { initializeApp } 
+    from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+    import { 
+      getAuth,
+      signInWithEmailAndPassword,
+      onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+    const firebaseConfig = {
+
+      apiKey: "AIzaSyAfz4Ep5E1xwaGFZkHcce0RosO8CsoqVz0",
+
+      authDomain: "wifi-dashboard-d91e6.firebaseapp.com",
+
+      projectId: "wifi-dashboard-d91e6",
+
+      storageBucket: "wifi-dashboard-d91e6.firebasestorage.app",
+
+      messagingSenderId: "178130294563",
+
+      appId: "1:178130294563:web:af5a5f5d5bb974386b1e96",
+
+      measurementId: "G-0MXCDMQEF2"
+
+    };
+
+    const app = initializeApp(firebaseConfig);
+
+    const auth = getAuth(app);
+
+    onAuthStateChanged(auth, (user) => {
+
+      if(user){
+
+        window.location.replace("index.html");
+
+        return;
+
+      }
+
+      document.body.style.visibility = "visible";
+
+    });
+
+    window.login = async function(){
+
+      const email = document.getElementById("email").value;
+
+      const password = document.getElementById("password").value;
+
+      try{
+
+        await signInWithEmailAndPassword(
+          auth,
+          email,
+          password
+        );
+
+        window.location.replace("index.html");
+
+      }catch(error){
+
+        console.log(error);
+
+        document.getElementById("msg").innerHTML =
+          "Email atau password salah";
+
+      }
+
+    }
+
+  </script>
+
+</body>
+</html>
